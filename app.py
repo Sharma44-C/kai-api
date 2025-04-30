@@ -1,10 +1,9 @@
-
+5
 from flask import Flask, jsonify, request
 import requests
 
 app = Flask(__name__)
 
-Gemini API settings
 GEMINI_API_KEY = "AIzaSyBIwMPbZLff8ZfcYGJedr_bFl0i9MzMXKk"
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
 
