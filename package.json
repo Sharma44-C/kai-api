@@ -1,0 +1,15 @@
+{
+  "name": "kai-chatbot-api",
+  "version": "1.0.0",
+  "description": "Kai — your spicy chat bro, served via Gemini API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7"
+  }
+}
