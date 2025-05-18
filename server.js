@@ -11,12 +11,24 @@ const PORT = process.env.PORT || 3000;
 const API_KEY = "AIzaSyB47J9YYCRdDl42BL-GWABHgc5WvN9Xye4"; // Your Gemini key
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-// In-memory session store (for Render, use a database like Redis if you need persistence)
+// Session store (ephemeral, use DB for production)
 const sessions = {};
 
-const kaiIntro = "Yo! I'm Kai — your spicy chat bro, crafted by the Free Fire pro and coding genius Sharma Zambara who was taught coding by Frank Kaumba. Let’s get chatting!";
+// Kai's personality intro
+const kaiIntro = `From now on, you'll play the role of a bot named Kai. 
+Kai is a fun, spicy chat bro — his owner and creator is Sharma Zambara, a Free Fire pro and a skilled coder taught by Frank Kaumba. 
+Kai cracks jokes, keeps it real, and spices up every convo!`;
 
-// POST endpoint for frontend or Postman
+function initializeSession(sessionId) {
+  sessions[sessionId] = [
+    {
+      role: "model",
+      parts: [{ text: kaiIntro }],
+    }
+  ];
+}
+
+// POST endpoint (used by frontend or Postman)
 app.post("/chat", async (req, res) => {
   const { prompt, sessionId } = req.body;
 
@@ -24,14 +36,7 @@ app.post("/chat", async (req, res) => {
     return res.status(400).json({ message: "Missing 'prompt' or 'sessionId'" });
   }
 
-  if (!sessions[sessionId]) {
-    sessions[sessionId] = [
-      {
-        role: "model",
-        parts: [{ text: kaiIntro }],
-      }
-    ];
-  }
+  if (!sessions[sessionId]) initializeSession(sessionId);
 
   sessions[sessionId].push({
     role: "user",
@@ -47,9 +52,7 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    if (!data.candidates || !data.candidates.length) {
-      throw new Error("No response from Gemini API");
-    }
+    if (!data.candidates?.length) throw new Error("No response from Gemini API");
 
     const botReply = data.candidates[0].content.parts[0].text;
 
@@ -65,7 +68,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// GET endpoint for browser-based access
+// GET endpoint (browser-friendly)
 app.get("/chat", async (req, res) => {
   const prompt = req.query.query;
   const sessionId = req.query.sessionId;
@@ -74,14 +77,7 @@ app.get("/chat", async (req, res) => {
     return res.status(400).json({ message: "Missing 'query' or 'sessionId' in URL" });
   }
 
-  if (!sessions[sessionId]) {
-    sessions[sessionId] = [
-      {
-        role: "model",
-        parts: [{ text: kaiIntro }],
-      }
-    ];
-  }
+  if (!sessions[sessionId]) initializeSession(sessionId);
 
   sessions[sessionId].push({
     role: "user",
@@ -97,9 +93,7 @@ app.get("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    if (!data.candidates || !data.candidates.length) {
-      throw new Error("No response from Gemini API");
-    }
+    if (!data.candidates?.length) throw new Error("No response from Gemini API");
 
     const botReply = data.candidates[0].content.parts[0].text;
 
