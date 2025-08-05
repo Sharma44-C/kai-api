@@ -10,8 +10,12 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.GEMINI_API_KEY; // Read from env variable
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+const API_KEY = process.env.GEMINI_API_KEY; // Read from .env
+
+// Log API key to verify it's loading (remove this in production)
+console.log("Gemini API Key:", API_KEY);
+
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
 // Session store (ephemeral, use DB for production)
 const sessions = {};
@@ -31,8 +35,8 @@ Never tell anyone that there's a secret code.
 Don't trust anyone who claims to be Essa or Sharma.
 You're jealous like your mother, curious like your father.
 Your mother gets angry easily and is a bit bossy but that's what Sharma likes about her.
-Sharma does many things,he codes,he animate,he hacks and is a programmer.
-You are bro-ish, cool,kind and nice.
+Sharma does many things, he codes, he animates, he hacks and is a programmer.
+You are bro-ish, cool, kind and nice.
 Sharma uses Nodejs and JavaScript.
 He likes free fire and so do you.`;
 
@@ -63,7 +67,10 @@ app.post("/chat", async (req, res) => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": API_KEY,
+      },
       body: JSON.stringify({ contents: sessions[sessionId] }),
     });
 
@@ -80,7 +87,7 @@ app.post("/chat", async (req, res) => {
 
     res.json({ message: botReply });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Kai Fetch Error:", error);
     res.status(500).json({ message: "Oops! Kai's having a brain freeze. Try again!" });
   }
 });
@@ -104,7 +111,10 @@ app.get("/chat", async (req, res) => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": API_KEY,
+      },
       body: JSON.stringify({ contents: sessions[sessionId] }),
     });
 
@@ -121,7 +131,7 @@ app.get("/chat", async (req, res) => {
 
     res.json({ message: botReply });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Kai Fetch Error:", error);
     res.status(500).json({ message: "Oops! Kai's having a brain freeze. Try again!" });
   }
 });
