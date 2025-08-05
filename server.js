@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = "AIzaSyAG66SkKGOys5whwo5pO8ZmItLXlPtsaPo"; // Your Gemini key
+const API_KEY = "AIzaSyCOQ7c_FPPb_9ezmC1u8gdV8js4uny5nho"; // Your Gemini key
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
 // Session store (ephemeral, use DB for production)
