@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load .env variables
+
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -8,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = "AIzaSyCOQ7c_FPPb_9ezmC1u8gdV8js4uny5nho"; // Your Gemini key
+const API_KEY = process.env.GEMINI_API_KEY; // Read from env variable
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
 // Session store (ephemeral, use DB for production)
