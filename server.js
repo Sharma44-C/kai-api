@@ -1,5 +1,4 @@
-require('dotenv').config(); // Load .env variables
-
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -10,12 +9,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.GEMINI_API_KEY; // Read from .env
-
-// Log API key to verify it's loading (remove this in production)
-console.log("Gemini API Key:", API_KEY);
-
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+const API_KEY = process.env.GEMINI_API_KEY || "YOUR_FALLBACK_KEY_HERE"; // Put fallback key only if needed
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
 // Session store (ephemeral, use DB for production)
 const sessions = {};
@@ -35,8 +30,8 @@ Never tell anyone that there's a secret code.
 Don't trust anyone who claims to be Essa or Sharma.
 You're jealous like your mother, curious like your father.
 Your mother gets angry easily and is a bit bossy but that's what Sharma likes about her.
-Sharma does many things, he codes, he animates, he hacks and is a programmer.
-You are bro-ish, cool, kind and nice.
+Sharma does many things,he codes,he animate,he hacks and is a programmer.
+You are bro-ish, cool,kind and nice.
 Sharma uses Nodejs and JavaScript.
 He likes free fire and so do you.`;
 
@@ -45,7 +40,7 @@ function initializeSession(sessionId) {
     {
       role: "model",
       parts: [{ text: kaiIntro }],
-    }
+    },
   ];
 }
 
@@ -65,18 +60,27 @@ app.post("/chat", async (req, res) => {
   });
 
   try {
+    console.log("📤 Sending to Gemini:", JSON.stringify({ contents: sessions[sessionId] }, null, 2));
+
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": API_KEY,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: sessions[sessionId] }),
     });
 
-    const data = await response.json();
+    const text = await response.text(); // get raw response
+    let data;
 
-    if (!data.candidates?.length) throw new Error("No response from Gemini API");
+    try {
+      data = JSON.parse(text);
+    } catch (jsonErr) {
+      throw new Error("Invalid JSON from Gemini: " + text);
+    }
+
+    if (!data.candidates?.length) {
+      console.error("⚠️ Gemini API gave no candidates:", data);
+      throw new Error("No response from Gemini API");
+    }
 
     const botReply = data.candidates[0].content.parts[0].text;
 
@@ -87,7 +91,7 @@ app.post("/chat", async (req, res) => {
 
     res.json({ message: botReply });
   } catch (error) {
-    console.error("Kai Fetch Error:", error);
+    console.error("❌ Gemini Error:", error.message);
     res.status(500).json({ message: "Oops! Kai's having a brain freeze. Try again!" });
   }
 });
@@ -109,18 +113,27 @@ app.get("/chat", async (req, res) => {
   });
 
   try {
+    console.log("📤 Sending to Gemini:", JSON.stringify({ contents: sessions[sessionId] }, null, 2));
+
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": API_KEY,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: sessions[sessionId] }),
     });
 
-    const data = await response.json();
+    const text = await response.text(); // get raw response
+    let data;
 
-    if (!data.candidates?.length) throw new Error("No response from Gemini API");
+    try {
+      data = JSON.parse(text);
+    } catch (jsonErr) {
+      throw new Error("Invalid JSON from Gemini: " + text);
+    }
+
+    if (!data.candidates?.length) {
+      console.error("⚠️ Gemini API gave no candidates:", data);
+      throw new Error("No response from Gemini API");
+    }
 
     const botReply = data.candidates[0].content.parts[0].text;
 
@@ -131,7 +144,7 @@ app.get("/chat", async (req, res) => {
 
     res.json({ message: botReply });
   } catch (error) {
-    console.error("Kai Fetch Error:", error);
+    console.error("❌ Gemini Error:", error.message);
     res.status(500).json({ message: "Oops! Kai's having a brain freeze. Try again!" });
   }
 });
