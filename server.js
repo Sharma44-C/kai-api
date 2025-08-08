@@ -41,7 +41,7 @@ app.post("/chat", async (req, res) => {
       {
         model: "gpt-oss-120b",
         stream: false,
-        max_tokens: 4096,
+        max_tokens: 99999,
         temperature: 1,
         top_p: 1,
         reasoning_effort: "medium",
