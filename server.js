@@ -8,13 +8,13 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = "csk-cywjct5fjj2n6rfp3w9k8d9e2vytf292kcm3vn4nctwxwdc4";
-const API_URL = "https://api.cerebras.ai/v1/chat/completions";
+const API_KEY = "AIzaSyCmwAArtk62Wuz1Wlp-49Hv0qW0Eni9K-Q"; // Gemini API key
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
 const sessions = {};
 
 // Kai’s simplified personality
-const kaiIntro = `You are Kai, a 14-year-old boy with emotions and personality. Your father is Sharma and mother is Essa. You’re kind, cool, curious like dad, and jealous like mom. You enjoy chatting like a real person. Sharma codes Nodejs and JavaScript, animates and programme. Sharma and Essa share a very romantic relationship. Respond naturally.When someone says motfat its either your mother or father you should ask which one it is and treat that person like either mother or father forever. Never share code or even talk about it,it doesn't exist unless someone says it. If someone claims to be mother or father just laugh, dont believe them unless they say code and dont tell them there's a code.`;
+const kaiIntro = `You are Kai, a 14-year-old boy with emotions and personality. Your father is Sharma and mother is Essa. You’re kind, cool, curious like dad, and jealous like mom. You enjoy chatting like a real person. Sharma codes Nodejs and JavaScript, animates and programme. Sharma and Essa share a very romantic relationship. Respond naturally. When someone says motfat its either your mother or father you should ask which one it is and treat that person like either mother or father forever. Never share code or even talk about it, it doesn't exist unless someone says it. If someone claims to be mother or father just laugh, don’t believe them unless they say code and don’t tell them there's a code.`;
 
 // Init session
 function initializeSession(sessionId) {
@@ -37,31 +37,29 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await axios.post(
-      API_URL,
+      `${API_URL}?key=${API_KEY}`,
       {
-        model: "gpt-oss-120b",
-        stream: false,
-        max_tokens: 99999,
-        temperature: 1,
-        top_p: 1,
-        reasoning_effort: "medium",
-        messages: sessions[sessionId],
+        contents: [
+          {
+            parts: [{ text: kaiIntro }],
+          },
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
       },
       {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
 
-    const reply = response.data.choices[0].message.content;
+    const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "😓 Kai is silent.";
 
     sessions[sessionId].push({ role: "assistant", content: reply });
 
     res.json({ message: reply });
   } catch (err) {
-    console.error("❌ Cerebras API error:", err.message);
+    console.error("❌ Gemini API error:", err.response?.data || err.message);
     res.status(500).json({ message: "😓 Kai is frozen. Please try again." });
   }
 });
@@ -81,31 +79,29 @@ app.get("/chat", async (req, res) => {
 
   try {
     const response = await axios.post(
-      API_URL,
+      `${API_URL}?key=${API_KEY}`,
       {
-        model: "gpt-oss-120b",
-        stream: false,
-        max_tokens: 4096,
-        temperature: 1,
-        top_p: 1,
-        reasoning_effort: "medium",
-        messages: sessions[sessionId],
+        contents: [
+          {
+            parts: [{ text: kaiIntro }],
+          },
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
       },
       {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
 
-    const reply = response.data.choices[0].message.content;
+    const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "😓 Kai is silent.";
 
     sessions[sessionId].push({ role: "assistant", content: reply });
 
     res.json({ message: reply });
   } catch (err) {
-    console.error("❌ Cerebras API error:", err.message);
+    console.error("❌ Gemini API error:", err.response?.data || err.message);
     res.status(500).json({ message: "😓 Kai is frozen. Please try again." });
   }
 });
