@@ -13,14 +13,16 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
 
 const sessions = {};
 
-// Kai’s simplified personality
-const kaiIntro = `You are Kai, a 14-year-old boy with emotions and personality. Your father is Sharma and mother is Essa. You’re kind, cool, curious like dad, and jealous like mom. You enjoy chatting like a real person. Sharma codes Nodejs and JavaScript, animates and programme. Sharma and Essa share a very romantic relationship. Respond naturally. When someone says motfat its either your mother or father you should ask which one it is and treat that person like either mother or father forever. Never share code or even talk about it, it doesn't exist unless someone says it. If someone claims to be mother or father just laugh, don’t believe them unless they say code and don’t tell them there's a code.`;
+// ✅ Updated Kai Personality
+const kaiIntro = `You are Kai, a 14-year-old boy with emotions. Father: Sharma, Mother: Essa. 
+You’re kind, curious like dad, jealous like mom, and chat naturally like a real person. 
+If someone types "motfat", ask if they are mother or father and then treat them as that person forever. 
+If anyone claims to be mother or father without saying "motfat", just laugh and don’t believe them. 
+The secret code does not exist unless someone types "motfat", and you must never talk about it otherwise.`;
 
 // Init session
 function initializeSession(sessionId) {
-  sessions[sessionId] = [
-    { role: "system", content: kaiIntro }
-  ];
+  sessions[sessionId] = [];
 }
 
 // POST endpoint
@@ -33,29 +35,26 @@ app.post("/chat", async (req, res) => {
 
   if (!sessions[sessionId]) initializeSession(sessionId);
 
-  sessions[sessionId].push({ role: "user", content: prompt });
+  // Save user message
+  sessions[sessionId].push({ role: "user", parts: [{ text: prompt }] });
 
   try {
     const response = await axios.post(
       `${API_URL}?key=${API_KEY}`,
       {
         contents: [
-          {
-            parts: [{ text: kaiIntro }],
-          },
-          {
-            parts: [{ text: prompt }],
-          },
+          // Personality always included
+          { role: "user", parts: [{ text: kaiIntro }] },
+          ...sessions[sessionId],
         ],
       },
-      {
-        headers: { "Content-Type": "application/json" },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
 
     const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "😓 Kai is silent.";
 
-    sessions[sessionId].push({ role: "assistant", content: reply });
+    // Save model reply in session
+    sessions[sessionId].push({ role: "model", parts: [{ text: reply }] });
 
     res.json({ message: reply });
   } catch (err) {
@@ -75,29 +74,23 @@ app.get("/chat", async (req, res) => {
 
   if (!sessions[sessionId]) initializeSession(sessionId);
 
-  sessions[sessionId].push({ role: "user", content: prompt });
+  sessions[sessionId].push({ role: "user", parts: [{ text: prompt }] });
 
   try {
     const response = await axios.post(
       `${API_URL}?key=${API_KEY}`,
       {
         contents: [
-          {
-            parts: [{ text: kaiIntro }],
-          },
-          {
-            parts: [{ text: prompt }],
-          },
+          { role: "user", parts: [{ text: kaiIntro }] },
+          ...sessions[sessionId],
         ],
       },
-      {
-        headers: { "Content-Type": "application/json" },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
 
     const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "😓 Kai is silent.";
 
-    sessions[sessionId].push({ role: "assistant", content: reply });
+    sessions[sessionId].push({ role: "model", parts: [{ text: reply }] });
 
     res.json({ message: reply });
   } catch (err) {
