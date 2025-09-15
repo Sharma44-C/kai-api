@@ -1,13 +1,13 @@
-const express = require("express")
-const { GoogleGenAI } = require("@google/genai")
-const axios = require("axios")
+import express from 'express';
+import { GoogleGenAI } from '@google/genai';
 
-const app = express()
-const port = process.env.PORT || 3000
+const app = express();
+const port = process.env.PORT || 3000;
 
-// Setup Gemini via @google/genai
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-const model = genAI.getModel("gemini-2.5-pro") // You can use other Gemini models if needed
+// Initialize the GoogleGenAI client
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
 // Kai's short personality
 function kaiPersonality(userPrompt, personid) {
@@ -24,27 +24,27 @@ Rules:
 
 Now reply to (${personid}):  
 ${userPrompt}
-  `
+  `;
 }
 
-app.get("/", async (req, res) => {
+app.get('/', async (req, res) => {
   try {
-    const { prompt, personid } = req.query
-    if (!prompt) return res.json({ error: "No prompt provided" })
+    const { prompt, personid } = req.query;
+    if (!prompt) return res.json({ error: 'No prompt provided' });
 
-    const kaiPrompt = kaiPersonality(prompt, personid || "unknown")
+    const kaiPrompt = kaiPersonality(prompt, personid || 'unknown');
 
     // Generate response using Gemini
-    const result = await model.generateText({
-      input: kaiPrompt
-    })
+    const response = await genAI.generateContent({
+      model: 'gemini-2.5-pro',
+      contents: kaiPrompt,
+    });
 
-    const reply = result.output_text || "⚠️ No response."
-    res.json({ reply })
+    res.json({ reply: response.text });
   } catch (err) {
-    console.error("Error:", err.message)
-    res.status(500).json({ error: "Internal Server Error" })
+    console.error('Error:', err.message);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
 
-app.listen(port, () => console.log(`✅ Kai API running on port ${port}`))
+app.listen(port, () => console.log(`✅ Kai API running on port ${port}`));
