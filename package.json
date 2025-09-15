@@ -1,18 +1,14 @@
 {
-  "name": "kai-chatbot-api",
+  "name": "kai-api",
   "version": "1.0.0",
-  "description": "Kai — your spicy chat bro, served via Gemini API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "npm install"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.17.9",
+    "@google/genai": "^1.19.0",
     "axios": "^1.6.8",
-    "dotenv": "^16.0.0",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "node-fetch": "^2.6.7"
+    "express": "^4.18.2"
   }
 }
