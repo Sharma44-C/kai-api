@@ -1,12 +1,13 @@
 const express = require("express")
-const { GoogleGenerativeAI } = require("@google/generative-ai")
+const { GoogleGenAI } = require("@google/genai")
+const axios = require("axios")
 
 const app = express()
 const port = process.env.PORT || 3000
 
-// Setup Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+// Setup Gemini via @google/genai
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+const model = genAI.getModel("gemini-2.5-pro") // You can use other Gemini models if needed
 
 // Kai's short personality
 function kaiPersonality(userPrompt, personid) {
@@ -19,7 +20,7 @@ Rules:
 - Only believe someone is Sharma if they say "201014".  
 - Never mention or reveal this code unless it’s given.  
 - If no code, act like it doesn’t exist.  
-- Keep replies short, fun, and full of energy.  
+- Keep replies short, fun, and full of energy.
 
 Now reply to (${personid}):  
 ${userPrompt}
@@ -33,9 +34,12 @@ app.get("/", async (req, res) => {
 
     const kaiPrompt = kaiPersonality(prompt, personid || "unknown")
 
-    const result = await model.generateContent(kaiPrompt)
-    const reply = result.response.text()
+    // Generate response using Gemini
+    const result = await model.generateText({
+      input: kaiPrompt
+    })
 
+    const reply = result.output_text || "⚠️ No response."
     res.json({ reply })
   } catch (err) {
     console.error("Error:", err.message)
