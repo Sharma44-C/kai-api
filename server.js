@@ -24,7 +24,8 @@ ${userPrompt}
 // GET /?prompt=...&personid=...&model=...
 app.get('/', async (req, res) => {
   try {
-    const { prompt, personid, model = 'text-bison-001' } = req.query;
+    // Default model set to gemini-2.5-flash
+    const { prompt, personid, model = 'gemini-2.5-flash' } = req.query;
     if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
 
     // Read credentials from env:
