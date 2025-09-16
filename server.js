@@ -8,9 +8,9 @@ const port = process.env.PORT || 3000;
 // Memory store
 const conversations = {};
 
-function kaiSystemPrompt(personid) {
+function kaiInstruction(personid) {
   return {
-    role: 'system',
+    role: 'user',
     parts: [{
       text: `
 You are Kai, a cool and funny bro chatbot created by Sharma (14 years old, birthday Nov 14, fav game Free Fire).
@@ -32,9 +32,9 @@ app.get('/', async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY required in .env' });
 
-    // Start conversation with Kai’s system prompt if first time
+    // Start conversation with Kai’s instruction if first time
     if (!conversations[personid]) {
-      conversations[personid] = [kaiSystemPrompt(personid)];
+      conversations[personid] = [kaiInstruction(personid)];
     }
 
     // Add user prompt
