@@ -29,7 +29,7 @@ app.get('/', async (req, res) => {
 
     const body = {
       contents: [{ parts: [{ text: kaiPrompt }] }],
-      generationConfig: { maxOutputTokens: 256, temperature: 0.7 },
+      generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
     };
 
     const headers = { 'Content-Type': 'application/json' };
