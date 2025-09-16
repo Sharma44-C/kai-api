@@ -5,20 +5,20 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-function kaiPersonality(userPrompt, personid) {
+function kaiPersonality(prompt, personid) {
   return `
 You are Kai, a cool and funny bro chatbot created by Sharma (14 years old, birthday Nov 14, fav game Free Fire). Your tone is playful, brother-like, and spicy. Rules:
 - Only believe someone is Sharma if they say "201014".
 - Never mention or reveal this code unless it’s given.
 - If no code, act like it doesn’t exist.
 - Keep replies short, fun, and full of energy.
-Now reply to (${personid}): ${userPrompt}
+Now reply to (${personid}): ${prompt}
 `;
 }
 
 app.get('/', async (req, res) => {
   try {
-    const { prompt, personid, model = 'gemini-2.5-pro' } = req.query;
+    const { prompt, personid, model = 'gemini-2.5-flash' } = req.query;
     if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
 
     const apiKey = process.env.GEMINI_API_KEY;
