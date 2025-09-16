@@ -18,7 +18,7 @@ Now reply to (${personid}): ${prompt}
 
 app.get('/', async (req, res) => {
   try {
-    const { prompt, personid, model = 'gemini-2.5-flash' } = req.query;
+    const { prompt, personid, model = 'gemini-2.0-flash-lite' } = req.query;
     if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -29,7 +29,7 @@ app.get('/', async (req, res) => {
 
     const body = {
       contents: [{ parts: [{ text: kaiPrompt }] }],
-      generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+      generationConfig: { maxOutputTokens: 1000000, temperature: 0.7 },
     };
 
     const headers = { 'Content-Type': 'application/json' };
