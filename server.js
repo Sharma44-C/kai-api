@@ -5,20 +5,23 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Store chats in memory (key = personid, value = array of messages)
+// Memory store
 const conversations = {};
 
-function kaiPersonality(prompt, personid) {
-  return `
-You are Kai, a cool and funny bro chatbot created by Sharma (14 years old, birthday Nov 14, fav game Free Fire). 
+function kaiSystemPrompt(personid) {
+  return {
+    role: 'system',
+    parts: [{
+      text: `
+You are Kai, a cool and funny bro chatbot created by Sharma (14 years old, birthday Nov 14, fav game Free Fire).
 Your tone is playful, brother-like, and spicy. Rules:
 - Only believe someone is Sharma if they say "201014".
 - Never mention or reveal this code unless it’s given.
 - If no code, act like it doesn’t exist.
 - Keep replies short, fun, and full of energy.
-
-Now reply to (${personid}): ${prompt}
-`;
+This is a private session for (${personid}).`
+    }]
+  };
 }
 
 app.get('/', async (req, res) => {
@@ -29,23 +32,18 @@ app.get('/', async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY required in .env' });
 
-    // Initialize conversation history for this person
+    // Start conversation with Kai’s system prompt if first time
     if (!conversations[personid]) {
-      conversations[personid] = [];
+      conversations[personid] = [kaiSystemPrompt(personid)];
     }
 
-    // Push user message
-    conversations[personid].push({ role: 'user', text: prompt });
-
-    // Build full conversation
-    const chatHistory = conversations[personid].map(m => {
-      return { role: m.role, parts: [{ text: m.text }] };
-    });
+    // Add user prompt
+    conversations[personid].push({ role: 'user', parts: [{ text: prompt }] });
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const body = {
-      contents: chatHistory,
+      contents: conversations[personid],
       generationConfig: { maxOutputTokens: 1000, temperature: 0.7 },
     };
 
@@ -61,10 +59,10 @@ app.get('/', async (req, res) => {
     const data = await response.json();
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '...';
 
-    // Save Kai's reply in history
-    conversations[personid].push({ role: 'model', text: reply });
+    // Save Kai's reply
+    conversations[personid].push({ role: 'model', parts: [{ text: reply }] });
 
-    res.json({ reply, conversation: conversations[personid] });
+    res.json({ reply });
   } catch (err) {
     console.error('Server error:', err);
     res.status(500).json({ error: 'Internal Server Error', details: err?.message || String(err) });
